@@ -104,6 +104,36 @@ same origin document can reach into the iframe and adjust the sandbox flags
 and reload itself. As once the iframe is navigated to a new location the new
 sandbox properties are be applied.
 
+## Proposed HTML spec changes
+
+Add definition of document-access feature policy to
+[2.3 Policy-controlled features](https://html.spec.whatwg.org/#policy-controlled-features)
+- "document-access", which has default allowlist of *.
+
+[A tuple origin](https://html.spec.whatwg.org/#concept-origin-tuple)
+A tuple consists of:
+- A scheme (a scheme).
+- A host (a host).
+- A port (a port).
+- A domain (null or a domain). Null unless stated otherwise.
+- A restricted flag. Unset unless stated otherwise.
+
+Origins can be shared, e.g., among multiple Document objects. Furthermore, origins are generally immutable. Only the domain of a tuple origin can be changed, and only through the document.domain API. The restricted flag is set after the feature policy is applied to the document by applying the value of the document-access policy.
+
+Adjust [same-agent Window objects](https://html.spec.whatwg.org/#same-agent-window-objects) definition such that:
+
+To determine whether a Window object A and a Window object B are considered same-agent Window objects, run these steps:
+- If A's relevant settings object's responsible browsing context's top-level browsing context's group is not B's
+  relevant settings object's responsible browsing context's top-level browsing context's group, then return false.
+- Let originA be A's relevant settings object's origin and originB be B's relevant settings object's origin.
+- If either originA or originB have the restricted flag set, return false.
+
+Adjust [same-orgin-domain](https://html.spec.whatwg.org/#same-origin-domain)
+-If A and B are both tuple origins, run these substeps:
+ - If either A or B's restricted flag is set, return false.
+ - If A and B's schemes are identical, and their domains are identical and non-null, then return true.
+ - Otherwise, if A and B are same origin and their domains are identical and null, then return true.
+
 ## Alternatives Explored
 
 Allow [document.domain = null](https://github.com/whatwg/html/issues/2757). Subtle
