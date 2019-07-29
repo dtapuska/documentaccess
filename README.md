@@ -11,6 +11,17 @@ didn't allow cross-document access? Then everything would be simpler, more secur
 The well-defined [postMessage()](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
 and friends could only be used for cooperating between two frames that opt into this policy.
 
+## Goals
+
+- Be able to embed iframes that have same-origin as other frames in the frame tree but
+  not be able to directly script them.
+- Have a same-origin iframe with other iframes be in a separate event loop.
+
+## Non-goals
+
+- Be able to isolate cross-origin frames in different processes (ie. Not a solution for
+https://github.com/whatwg/html/issues/4175).
+
 ## Proposal
 
 Sandbox flags work in dropping certain features that an iframe has (eg. scripting,
