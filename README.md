@@ -95,6 +95,13 @@ Alternatively it can be combined with sandbox flags to drop sandbox flags:
 
 ```
 
+## Specification
+
+These changes will hopefully be formally specified into the HTML spec via
+[PR 4606](https://github.com/whatwg/html/pull/4606) which also incorporates
+[PR 4617](https://github.com/whatwg/html/pull/4617).
+
+
 ## Security Considerations
 
 This specifically fixes cases where a web developer might create a sandboxed
