@@ -87,7 +87,7 @@ embedder were different top level domains.
 
 With the adoption of [signed exchanges](https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html)
 it is believed that enforcing this different origin policy on the
-[AMP cache]((https://github.com/ampproject/amphtml/issues/20848) will no longer
+[AMP cache](https://github.com/ampproject/amphtml/issues/20848) will no longer
 be enforcable.
 
 ## Example
