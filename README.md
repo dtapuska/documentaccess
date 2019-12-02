@@ -45,17 +45,23 @@ through window.top.frames. It is desirable that B could make that more difficult
 by forcing the same origin-domain checks that enable DOM access to fail by setting
 some policy.
 
-The proposal is to support a Feature Policy `document-access` that prevents
-a frame from reaching into the DOM of any other frame. The frame will fail
-same origin checks on the JS bindings security perspective.
+The proposal is to support an iframe attribute `disallowdocumentaccess` that prevents
+a frame from reaching across the frame boundary. The frame will fail same origin checks
+on the JS bindings security perspective.
 
-To implement this the [isPlatformObjectSameOrigin(0)](https://html.spec.whatwg.org/#isplatformobjectsameorigin-(-o-))
-needs to be change so that if the current settings object contains a feature
-policy that restricts access, then return false.
+A new [agent cluster map](https://html.spec.whatwg.org/multipage/browsers.html#agent-cluster-map)
+should be allocated when an iframe encounters the `disallowdocumentaccess` attribute instead
+of using the one from the [browsing context group](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-group).
+This will cause the [agents](https://html.spec.whatwg.org/multipage/webappapis.html#obtain-similar-origin-window-agent)
+allocated to each execution context to be different.
+
+An additional change to [isPlatformObjectSameOrigin(0)](https://html.spec.whatwg.org/#isplatformobjectsameorigin-(-o-))
+needs to be completed. The algorithm should check that the [Agent](https://tc39.es/ecma262/#sec-agents) is the same on 
+the objects. If it is different that it restricts access, then return false.
 
 ## Defined Cross Origin properties
 The following properties which are cross origin properties would be allowed on same
-origin documents that had the `document-access` policy restricted.
+origin documents that had the `disallowdocumentaccess` attribute applied.
 
 - [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)
 - [location](https://developer.mozilla.org/en-US/docs/Web/API/Location)
@@ -94,7 +100,7 @@ be enforcable.
 
 ```html
 
-<iframe allow="document-access 'none'" src="iframe.html"></iframe>
+<iframe disallowdocumentaccess src="iframe.html"></iframe>
 
 ```
 
@@ -102,7 +108,7 @@ Alternatively it can be combined with sandbox flags to drop sandbox flags:
 
 ```html
 
-<iframe sandbox="allow-scripts allow-same-origin" allow="document-access 'none'" src="iframe.html"></iframe>
+<iframe sandbox="allow-scripts allow-same-origin" disallowdocumentaccess src="iframe.html"></iframe>
 
 ```
 
@@ -137,3 +143,19 @@ Implement another sandbox policy like same-origin but call it
 same-origin-without-document-access. This itself is not useful for pages
 that don't want to use sandboxes.
 
+Implement `document-access` via a feature policy instead of an iframe
+attribute. The problem with feature policy is that it inherits across
+the frames that set it. So while a embeeder may wish to restrict a frame
+access to its ancestors and siblings it may not wish to restrict access
+inside that frame itself.
+eg.
+
+Frame A0
+ Frame A1
+  Frame B1
+  Frame B2
+ Frame A2
+ 
+If Frame A1 has a feature policy set on it, it could not directly access
+A2 or A0 but since feature policy inherits B1 could not access B2 either.
+We wish to allow B1 & B2 to maintain accessing each other.
