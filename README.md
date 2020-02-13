@@ -116,6 +116,11 @@ An additional change to [isPlatformObjectSameOrigin(0)](https://html.spec.whatwg
 needs to be completed. The algorithm should check that the [Agent](https://tc39.es/ecma262/#sec-agents) is the same on 
 the objects. If it is different that it restricts access, then return false.
 
+## Pull Request against HTML Spec
+
+A [pull request](https://github.com/whatwg/html/pull/4606) has been made against the HTML spec.
+
+
 ## Defined Cross Origin properties
 The following properties which are cross origin properties would be allowed on same
 origin documents that had the `disallowdocumentaccess` attribute applied.
@@ -201,6 +206,45 @@ and in the future. Since it isn't possible to determine what the future sandbox
 flags would be it would mean that the author would have to update the sites
 everytime new sandbox flags are added. This causes sandbox flags not to be the
 ideal choice for this feature.
+
+## Compatability Risks
+
+Consider the case where A sets the `disallowdocumentaccess` attribute on B1.
+
+```
+      A
+    /   \
+   B1   B2
+  /  \    \
+ C1  C2    C3
+
+```
+
+B1 and B2 cannot directly manipulate one another. 
+C1 and C2 can directly manipulate one another.
+C1/C2 and C3 cannot directly manipulate one another.
+
+B2's access to B1 is essentially limited to `postMessage` but this is very
+similar to A setting the `sandbox` attribute on B1 with the exception of
+storage access (B1 and B2 do not derive a new opaque origin when
+`disallowdocumentaccess` is set).
+
+So while it is possible to write a web observable test to see this behavior
+(try to access window.location.href but see that postMessage is successful)
+the situations it creates web authors have already had to deal with because
+A is controlling what is being embedded.
+
+## What about specifically having each iframe acknowledge it allows this mode?
+
+A given iframe has no control over whether other iframes in the same frame tree are
+loaded or not so requiring it to opt-in on the enhanced agent policy seems like
+an additional barrier for adoption.
+
+This functionality would like to be enabled in popular publishing libraries
+such as [amp](https://amp.dev] in the definition of the
+[amp-iframe](https://amp.dev/documentation/components/amp-iframe/). Since that
+embeds an arbitrary number of origins the impact of making such a change
+wouldn't be possible if the iframes failed to load due to not "opting in".
 
 ## Example
 
