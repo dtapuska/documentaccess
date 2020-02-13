@@ -6,16 +6,21 @@
    1. [News Aggregator](#newsaggregator)
    1. [Safe Frame Ads](#safeframeads)
    1. [Slow Iframes](#slowiframes)
-1. [Problem Statement](#problemstatement)
+   1. [Performance Guarantees](#slowiframes)
 1. [Proposal](#proposal)
-   1. [User agent Enhacements](#enhancements)
-   1. [Feature Detection](#detection)
-   1. [Summary](#summary)
-1. [Alternatives](#alternatives)
-1. [Previous Discussion](#discussion)
+   1. [By Example](#byexample)
+   1. [The Details](#details)
+   1. [Pull Request](#pr)
+   1. [Cross Origin Properties](#prop)
+1. [Common Questions](#questions)
+   1. [Just use origins?](#origins)
+   1. [Use another sandbox flag?](#sandbox)
+   1. [Comaptability Risks?](#risks)
+   1. [What about optin in?](#optin)
 1. [Security](#security)
-1. [Privacy](#privacy)
-1. [Considerations outside the scope](#scope)
+   1. [Threat Model 1](#threat1)
+   1. [Threat Model 2](#threat2)
+1. [Alternatives](#alternatives)
 
 # Restricting Document Access of Same Origin Documents
 An explainer to define ability to restrict access to frames of same origin documents.
@@ -44,9 +49,9 @@ and friends could only be used for cooperating between two frames that opt into 
 https://github.com/whatwg/html/issues/4175).
 - Separate cookie, local storage.
 
-## Use Cases <a name="usecases"></a>
+# Use Cases <a name="usecases"></a>
 
-### News Aggregator <a name="newsaggregator"></a>
+## News Aggregator <a name="newsaggregator"></a>
 
 Consider an example of a news aggregator that embeds a series of iframes. It may
 embed two documents from the same origin but it really doesn't want those two pages
@@ -54,12 +59,12 @@ to communicate via direct scripting with each other. With window.top those frame
 communicate with each other calling diretly into another frame and manipulating the
 DOM. (possibly within the the context of a user gesture).
 
-### Slow Iframes <a name="slowads"></a>
+## Slow Iframes <a name="slowads"></a>
 
 Consider an example of two iframes on a page and one is executing synchronous
 XHRa slow performing iframe. 
 
-### Safe Frame Ads <a name="safeframeads"></a>
+## Safe Frame Ads <a name="safeframeads"></a>
 
 [Safe Frame Ads](https://www.iab.com/guidelines/safeframe/) may place two ads from
 different syndicate networks on the same origin. An ad should not be able to read
@@ -67,7 +72,7 @@ content from another ad (via window.name) thereby leaking some private informati
 about the user. Although there are solutions to prevent this it is a largely
 adopted pattern we could help mitigate.
 
-### Performance Guarantees
+## Performance Guarantees <a name="perf"></a>
 
 Being that the attribute isolates the iframe and the subtree in another Agent Cluster
 (and thereby another event loop) performance guarantees come with that. AMP supports
@@ -78,7 +83,25 @@ signed exchanges it is possible to serve both the main document and the iframe
 document from the same origin thereby preventing the performance guarantees.
 See details in the [amphtml issue](https://github.com/ampproject/amphtml/issues/20848)
 
-## Proposal
+# Proposal  <a name="proposal"></a>
+
+## Example  <a name="byexample"></a>
+
+```html
+
+<iframe disallowdocumentaccess src="iframe.html"></iframe>
+
+```
+
+Alternatively it can be combined with sandbox flags to drop sandbox flags:
+
+```html
+
+<iframe sandbox="allow-scripts allow-same-origin" disallowdocumentaccess src="iframe.html"></iframe>
+
+```
+
+## The Details  <a name="details"></a>
 
 Sandbox flags work in dropping certain features that an iframe has (eg. scripting,
 fullscreen, top level navigation or opaque origins). A sandboxed frame by default
@@ -116,12 +139,12 @@ An additional change to [isPlatformObjectSameOrigin(0)](https://html.spec.whatwg
 needs to be completed. The algorithm should check that the [Agent](https://tc39.es/ecma262/#sec-agents) is the same on 
 the objects. If it is different that it restricts access, then return false.
 
-## Pull Request against HTML Spec
+## Pull Request against HTML Spec <a name="pr"></a>
 
 A [pull request](https://github.com/whatwg/html/pull/4606) has been made against the HTML spec.
 
 
-## Defined Cross Origin properties
+## Defined Cross Origin properties <a name="prop"></a>
 The following properties which are cross origin properties would be allowed on same
 origin documents that had the `disallowdocumentaccess` attribute applied.
 
@@ -139,43 +162,9 @@ origin documents that had the `disallowdocumentaccess` attribute applied.
 - [self](https://developer.mozilla.org/en-US/docs/Web/API/Window/self)
 - [window](https://developer.mozilla.org/en-US/docs/Web/API/Window/window)
 
-## Threat model #1
+# Common Questions  <a name="questions"></a>
 
-### The actors
-- **The user**. This is the human who relies on the user agent to deliver a good experience for them and protect them.
-- **The user agent**. This is the web browser that tries protect privacy. 
-- **Safe frame**. Old technology that tries to bring safe ads to users.
-
-### The threat
-1. Arbirtary content in [safe frames](https://www.iab.com/guidelines/safeframe/) can 
-read location and other attributes on the document from the same origin.
-
-### The attack
-1. Create a malicious script that is embedded in the script of the safe iframe.
-1. Walk frame tree trying to extract information from other ads in the same syndicate network.
-
-## Threat model #2
-
-### The actors
-- **The user**. This is the human who relies on the user agent to deliver a good experience for them and protect them.
-- **The user agent**. This is the web browser that tries protect privacy. 
-- **Web developer**. Tries to use "allow-scripts allow-same-origin" sandbox attribute.
-
-### The threat
-1. A web developer assumes that placing content in a sandbox gives they some assurances.
-1. The iframe might require allow-scripts and allow-same-origin to run correctly.
-1. The web developer chooses to host the iframe and parent document on the same domain.
-1. The iframe gets adjusted to host a 3rd party hosted script.
-1. The 3rd party hosted script gets adjusted to try to escape sandboxes.
-1. Sandbox is easily escaped when 'allow-scripts allow-same-origin' is used on an iframe that has
-the same origin as the parent, such as downloads.
-
-### The attack
-1. Adjust frame owner elemnt's attributes directly.
-1. Reload iframe.
-1. Have more privledges.
-
-## Why can't you just use different origins?
+## Why can't you just use different origins?  <a name="origins"></a>
 
 While it is possible to get the same behavior using different subdomains
 for each iframe it is not enforcable from a framework since individual
@@ -194,7 +183,7 @@ it is believed that enforcing this different origin policy on the
 [AMP cache](https://github.com/ampproject/amphtml/issues/20848) will no longer
 be enforcable.
 
-## Why isn't this a sandbox feature?
+## Why isn't this a sandbox feature?  <a name="sandbox"></a>
 
 Sandbox flags have issues that they are all set by default so it is a very
 restrictive policy. For example setting `sandbox` specifies that all
@@ -207,7 +196,7 @@ flags would be it would mean that the author would have to update the sites
 everytime new sandbox flags are added. This causes sandbox flags not to be the
 ideal choice for this feature.
 
-## Compatability Risks
+## Compatability Risks  <a name="risks"></a>
 
 Consider the case where A sets the `disallowdocumentaccess` attribute on B1.
 
@@ -234,7 +223,7 @@ So while it is possible to write a web observable test to see this behavior
 the situations it creates web authors have already had to deal with because
 A is controlling what is being embedded.
 
-## What about specifically having each iframe acknowledge it allows this mode?
+## What about specifically having each iframe acknowledge it allows this mode?  <a name="optin"></a>
 
 A given iframe has no control over whether other iframes in the same frame tree are
 loaded or not so requiring it to opt-in on the enhanced agent policy seems like
@@ -246,23 +235,7 @@ such as [amp](https://amp.dev] in the definition of the
 embeds an arbitrary number of origins the impact of making such a change
 wouldn't be possible if the iframes failed to load due to not "opting in".
 
-## Example
-
-```html
-
-<iframe disallowdocumentaccess src="iframe.html"></iframe>
-
-```
-
-Alternatively it can be combined with sandbox flags to drop sandbox flags:
-
-```html
-
-<iframe sandbox="allow-scripts allow-same-origin" disallowdocumentaccess src="iframe.html"></iframe>
-
-```
-
-## Security Considerations
+# Security Considerations  <a name="security"></a>
 
 This specifically fixes cases where a web developer might create a sandboxed
 iframe with `sandbox="allow-same-origin allow-scripts` expecting that it provides
@@ -273,17 +246,44 @@ and cause some subtle security issues. i.e. The same origin document can reach i
 the iframe and adjust the sandbox flags and reload itself. As once the iframe is
 navigated to a new location the new sandbox properties are be applied.
 
+## Threat model #1  <a name="threat1"></a>
 
-## Proposed HTML spec changes
+### The actors
+- **The user**. This is the human who relies on the user agent to deliver a good experience for them and protect them.
+- **The user agent**. This is the web browser that tries protect privacy. 
+- **Safe frame**. Old technology that tries to bring safe ads to users.
 
-These changes will hopefully be formally specified into the HTML spec via
-[PR 4606](https://github.com/whatwg/html/pull/4606) which also incorporates
-[PR 4617](https://github.com/whatwg/html/pull/4617).
+### The threat
+1. Arbirtary content in [safe frames](https://www.iab.com/guidelines/safeframe/) can 
+read location and other attributes on the document from the same origin.
 
-The changes specifically involve the lookup of the Agent Cluster and the
-determination if two platform objects are the same origin.
+### The attack
+1. Create a malicious script that is embedded in the script of the safe iframe.
+1. Walk frame tree trying to extract information from other ads in the same syndicate network.
 
-## Alternatives Explored
+## Threat model #2  <a name="threat2"></a>
+
+### The actors
+- **The user**. This is the human who relies on the user agent to deliver a good experience for them and protect them.
+- **The user agent**. This is the web browser that tries protect privacy. 
+- **Web developer**. Tries to use "allow-scripts allow-same-origin" sandbox attribute.
+
+### The threat
+1. A web developer assumes that placing content in a sandbox gives they some assurances.
+1. The iframe might require allow-scripts and allow-same-origin to run correctly.
+1. The web developer chooses to host the iframe and parent document on the same domain.
+1. The iframe gets adjusted to host a 3rd party hosted script.
+1. The 3rd party hosted script gets adjusted to try to escape sandboxes.
+1. Sandbox is easily escaped when 'allow-scripts allow-same-origin' is used on an iframe that has
+the same origin as the parent, such as downloads.
+
+### The attack
+1. Adjust frame owner elemnt's attributes directly.
+1. Reload iframe.
+1. Have more privledges.
+
+
+# Alternatives Explored  <a name="alternatives"></a>
 
 Allow [document.domain = null](https://github.com/whatwg/html/issues/2757). Subtle
 and is not delegated by parent frame but the embedee needs to assign it. So it is
