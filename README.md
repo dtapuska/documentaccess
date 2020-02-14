@@ -5,7 +5,6 @@
 1. [Use Cases](#usecases)
    1. [News Aggregator](#newsaggregator)
    1. [Safe Frame Ads](#safeframeads)
-   1. [Slow Iframes](#slowiframes)
    1. [Performance Guarantees](#slowiframes)
 1. [Proposal](#proposal)
    1. [By Example](#byexample)
@@ -58,11 +57,6 @@ embed two documents from the same origin but it really doesn't want those two pa
 to communicate via direct scripting with each other. With window.top those frames can
 communicate with each other calling diretly into another frame and manipulating the
 DOM. (possibly within the the context of a user gesture).
-
-## Slow Iframes <a name="slowads"></a>
-
-Consider an example of two iframes on a page and one is executing synchronous
-XHRa slow performing iframe. 
 
 ## Safe Frame Ads <a name="safeframeads"></a>
 
