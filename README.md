@@ -97,7 +97,7 @@ Alternatively it can be combined with sandbox flags to drop sandbox flags:
 
 ## The Details  <a name="details"></a>
 
-Sandbox flags work bu dropping certain features that an iframe has (eg. scripting,
+Sandbox flags work by dropping certain features that an iframe has (eg. scripting,
 fullscreen, top level navigation or opaque origins). A sandboxed frame by default
 is a opaque origin but there are cases where you really want to preserve the origin
 of the original document. For example, sandboxed opaque origins won't send CORS
