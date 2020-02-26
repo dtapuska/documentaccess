@@ -39,12 +39,12 @@ and friends could only be used for cooperating between two frames that opt into 
 - Be able to embed iframes that have same-origin as other frames in the frame tree but
   not be able to directly script them.
 - Separate event loop per iframe for advanced scheduling.
-- CORS Origin headers aren't serailized on sandboxed origins.
+- CORS Origin headers aren't serialized on sandboxed origins.
 - Prevent `sandbox="allow-scripts allow-same-origin"` sandbox escaping.
 
 ## Out of scope  <a name="out-of-scope"></a>
 
-- Be able to isolate cross-origin frames in different processes (ie. Not a solution for
+- Be able to isolate cross-origin frames in different processes (i.e., not a solution for
 https://github.com/whatwg/html/issues/4175).
 - Separate cookie, local storage.
 
@@ -56,7 +56,7 @@ Consider an example of a news aggregator that embeds a series of iframes. It may
 embed two documents from the same origin but it really doesn't want those two pages
 to communicate via direct scripting with each other. With window.top those frames can
 communicate with each other calling diretly into another frame and manipulating the
-DOM. (possibly within the the context of a user gesture).
+DOM (possibly within the the context of a user gesture).
 
 ## Safe Frame Ads <a name="safeframeads"></a>
 
@@ -75,7 +75,7 @@ top-level page in order to ensure AMP's performance guarantees. This works fine 
 AMP is served from a different origin than the origin of the iframe. However with
 signed exchanges it is possible to serve both the main document and the iframe
 document from the same origin thereby preventing the performance guarantees.
-See details in the [amphtml issue](https://github.com/ampproject/amphtml/issues/20848)
+See details in the [amphtml issue](https://github.com/ampproject/amphtml/issues/20848).
 
 # Proposal  <a name="proposal"></a>
 
@@ -97,10 +97,10 @@ Alternatively it can be combined with sandbox flags to drop sandbox flags:
 
 ## The Details  <a name="details"></a>
 
-Sandbox flags work in dropping certain features that an iframe has (eg. scripting,
+Sandbox flags work bu dropping certain features that an iframe has (eg. scripting,
 fullscreen, top level navigation or opaque origins). A sandboxed frame by default
 is a opaque origin but there are cases where you really want to preserve the origin
-of the original document. For example sandboxed opaque origins won't send CORS
+of the original document. For example, sandboxed opaque origins won't send CORS
 Origin headers. Access to shared cookies and local storage are sometimes
 necessary inside an iframe as well.
 
@@ -113,14 +113,14 @@ For example:
 
 A embeds two frames from B, both of which include content that's not as
 trustworthy as it ought to be. One of the frames from B turns out to be malicious.
-Today, it can takeover any other frames from B by walking the tree exposed
+Today, it can take over any other frames from B by walking the tree exposed
 through window.top.frames. It is desirable that B could make that more difficult
 by forcing the same origin-domain checks that enable DOM access to fail by setting
 some policy.
 
 The proposal is to support an iframe attribute `disallowdocumentaccess` that prevents
-a frame from reaching across the frame boundary. The frame will fail same origin checks
-on the JS bindings security perspective.
+a frame from reaching across the frame boundary. The frame will fail same-origin checks
+from the JS bindings security perspective.
 
 A new [agent cluster map](https://html.spec.whatwg.org/multipage/browsers.html#agent-cluster-map)
 should be allocated when an iframe encounters the `disallowdocumentaccess` attribute instead
@@ -164,11 +164,11 @@ While it is possible to get the same behavior using different subdomains
 for each iframe it is not enforcable from a framework since individual
 iframes could navigate themselves.
 
-Consider [AMP iframe](https://www.ampproject.org/docs/reference/components/amp-iframe)
+Consider [AMP iframe](https://www.ampproject.org/docs/reference/components/amp-iframe),
 which requires the iframe (embedee) to be an another domain than the
 container (embedder). This is a [policy](https://github.com/ampproject/amphtml/blob/master/spec/amp-iframe-origin-policy.md)
 so that the embedee does not become dependent on the embedeer and can
-be served from anywhere. ie. If the embedee was placed inside another
+be served from anywhere, i.e., if the embedee was placed inside another
 embedder it would function exactly the same if embedder and the second
 embedder were different top level domains.
 
@@ -190,7 +190,7 @@ flags would be it would mean that the author would have to update the sites
 everytime new sandbox flags are added. This causes sandbox flags not to be the
 ideal choice for this feature.
 
-## Compatability Risks  <a name="risks"></a>
+## Compatibility Risks  <a name="risks"></a>
 
 Consider the case where A sets the `disallowdocumentaccess` attribute on B1.
 
@@ -207,13 +207,13 @@ B1 and B2 cannot directly manipulate one another.
 C1 and C2 can directly manipulate one another.
 C1/C2 and C3 cannot directly manipulate one another.
 
-B2's access to B1 is essentially limited to `postMessage` but this is very
+B2's access to B1 is essentially limited to `postMessage`, but this is very
 similar to A setting the `sandbox` attribute on B1 with the exception of
 storage access (B1 and B2 do not derive a new opaque origin when
 `disallowdocumentaccess` is set).
 
 So while it is possible to write a web observable test to see this behavior
-(try to access window.location.href but see that postMessage is successful)
+(try to access `window.location.href` but see that `postMessage` is successful),
 the situations it creates web authors have already had to deal with because
 A is controlling what is being embedded.
 
@@ -224,9 +224,9 @@ loaded or not so requiring it to opt-in on the enhanced agent policy seems like
 an additional barrier for adoption.
 
 This functionality would like to be enabled in popular publishing libraries
-such as [amp](https://amp.dev] in the definition of the
+such as [amp](https://amp.dev) in the definition of the
 [amp-iframe](https://amp.dev/documentation/components/amp-iframe/). Since that
-embeds an arbitrary number of origins the impact of making such a change
+embeds an arbitrary number of origins, the impact of making such a change
 wouldn't be possible if the iframes failed to load due to not "opting in".
 
 # Security Considerations  <a name="security"></a>
@@ -272,9 +272,9 @@ read location and other attributes on the document from the same origin.
 the same origin as the parent, such as downloads.
 
 ### The attack
-1. Adjust frame owner elemnt's attributes directly.
+1. Adjust frame owner element's attributes directly.
 1. Reload iframe.
-1. Have more privledges.
+1. Have more privileges.
 
 
 # Alternatives Explored  <a name="alternatives"></a>
@@ -297,14 +297,16 @@ attribute. The problem with feature policy is that it inherits across
 the frames that set it. So while a embeeder may wish to restrict a frame
 access to its ancestors and siblings it may not wish to restrict access
 inside that frame itself.
-eg.
+For example:
 
+```
 Frame A0
  Frame A1
   Frame B1
   Frame B2
  Frame A2
- 
+```
+
 If Frame A1 has a feature policy set on it, it could not directly access
 A2 or A0 but since feature policy inherits B1 could not access B2 either.
 We wish to allow B1 & B2 to maintain accessing each other.
