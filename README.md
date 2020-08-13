@@ -1,7 +1,7 @@
 # Table Of Contents
 1. [Motivation](#motivation)
 1. [Goals](#goals)
-1. [Out of scope](#out-of-scope)
+1. [Non-Goals](#non-goals)
 1. [Use Cases](#usecases)
    1. [News Aggregator](#newsaggregator)
    1. [Safe Frame Ads](#safeframeads)
@@ -42,11 +42,12 @@ and friends could only be used for cooperating between two frames that opt into 
 - CORS Origin headers aren't serialized on sandboxed origins.
 - Prevent `sandbox="allow-scripts allow-same-origin"` sandbox escaping.
 
-## Out of scope  <a name="out-of-scope"></a>
+## Non-Goals  <a name="non-goals"></a>
 
 - Be able to isolate cross-origin frames in different processes (i.e., not a solution for
 https://github.com/whatwg/html/issues/4175).
 - Separate cookie, local storage.
+- Provide a security boundary between same-origin iframes.
 
 # Use Cases <a name="usecases"></a>
 
